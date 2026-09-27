@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Notes</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; }
+    form { display: flex; gap: 8px; }
+    input { flex: 1; padding: 8px; }
+    button { padding: 8px 16px; }
+    li { padding: 4px 0; }
+    .muted { color: #666; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h1>Notes</h1>
+  <p class="muted">web (nginx) &rarr; api (Python) &rarr; DynamoDB. Worker heartbeat: <span id="hb">checking...</span></p>
+  <form id="f">
+    <input id="t" placeholder="Write a note" maxlength="500" required>
+    <button>Add</button>
+  </form>
+  <ul id="notes"></ul>
+  <script>
+    async function load() {
+      const res = await fetch('/api/notes');
+      const notes = await res.json();
+      document.getElementById('notes').innerHTML = notes
+        .sort((a, b) => b.created_at - a.created_at)
+        .map(n => `<li>${n.text.replace(/</g, '&lt;')}</li>`).join('');
+      const hb = await (await fetch('/api/heartbeat')).json();
+      document.getElementById('hb').textContent = hb.updated_at
+        ? `${Math.round(Date.now() / 1000 - hb.updated_at)}s ago` : 'none yet';
+    }
+    document.getElementById('f').onsubmit = async (e) => {
+      e.preventDefault();
+      const t = document.getElementById('t');
+      await fetch('/api/notes', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ text: t.value }) });
+      t.value = '';
+      load();
+    };
+    load();
+  </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+# One entry per container image. This file is the "inventory".
+# At work, this is where your 45 images would go.
+#
+# port: 0            -> background worker, no load balancer
+# path_patterns      -> which URLs the load balancer sends to this service
+# priority           -> lower number = checked first by the load balancer
+# dynamodb_access    -> gives the task's IAM role read/write on the notes table
+
+web:
+  port: 80
+  cpu: 256
+  memory: 512
+  path_patterns: ["/*"]
+  priority: 200
+  health_check_path: /
+
+api:
+  port: 8080
+  cpu: 256
+  memory: 512
+  path_patterns: ["/api/*"]
+  priority: 100
+  health_check_path: /api/health
+  dynamodb_access: true
+
+worker:
+  port: 0
+  cpu: 256
+  memory: 512
+  dynamodb_access: true
