@@ -28,3 +28,11 @@ worker:
   cpu: 256
   memory: 512
   dynamodb_access: true
+
+docs:
+  port: 80
+  cpu: 256
+  memory: 512
+  path_patterns: ["/docs*"]
+  priority: 150
+  health_check_path: /docs/
