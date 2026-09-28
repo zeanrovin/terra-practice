@@ -6,14 +6,26 @@ What we covered while deploying the notes app with plain Terraform (`terraform/d
 
 | Item | Status |
 |---|---|
-| State bucket `terra-practice-tfstate-194169209897` (`bootstrap/`) | Created. Keep it until you're completely done |
-| Dev stack (`terraform/dev/`): 46 resources | **Running, about $0.13/hr.** Run `terraform destroy` at the end of the session |
-| App URL | http://notes-dev-899866751.us-west-2.elb.amazonaws.com (or `terraform output app_url`) |
+| State bucket `terra-practice-tfstate-194169209897` (`bootstrap/`) | Created. Keep it until you're completely done (costs well under a cent a month) |
+| Dev stack (`terraform/dev/`) | **Destroyed** (46 resources, confirmed empty in AWS). Nothing is billing. Notes and ECR images were deleted with it |
+| App URL | None while destroyed. A redeploy gets a **new** URL: `terraform output app_url` |
 | Exercise 1 (console tour) | Instructions given |
-| Exercise 2 (add `docs` service) | Code ready and planned (8 to add), **not applied yet** |
+| Exercise 2 (add `docs` service) | Code committed, **not deployed yet**. Resuming (below) deploys it |
 | Exercises 3–6 | Not started |
 | `learn/` practice project | Created, costs nothing |
 | AWS account / region | `194169209897` / `us-west-2` (Oregon) |
+
+### Resuming after a break
+
+```bash
+cd ~/git/terra-practice/terraform/dev
+terraform apply -target=module.ecr     # repos first (now 4, including docs)
+../../scripts/push-images.sh v1        # rebuild + push all images (Docker Desktop must be running)
+terraform apply                        # everything else, ~5 min, starts billing (~$0.13/hr)
+terraform output app_url               # new URL; give it 1–2 min for health checks
+```
+
+Pausing again: `terraform destroy` in `terraform/dev` (keep `bootstrap/`).
 
 ---
 
@@ -317,6 +329,6 @@ No Terraform code changes: this is what adding image #46 at work looks like.
 - [ ] Exercise 4: drift (set api desired count to 2 in the console, then `plan`)
 - [ ] Exercise 5: break IAM (`dynamodb_access: false` on api, find `AccessDenied` in logs)
 - [ ] Exercise 6: `terraform state list` / `state show`, find the state file in S3
-- [ ] **`terraform destroy` in `terraform/dev`** (keep `bootstrap/`)
+- [x] `terraform destroy` in `terraform/dev` before the break (repeat after each session; keep `bootstrap/`)
 - [ ] Monday: Terragrunt (`live/dev/`)
-- [ ] Commit `learn/`, `apps/docs/`, `services.yaml`, this file
+- [x] Commit `learn/`, `apps/docs/`, `services.yaml`, this file
